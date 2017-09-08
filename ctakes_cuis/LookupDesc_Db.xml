@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+-->
+<lookupSpecification>
+	<!--  Defines what dictionaries will be used in terms of implementation specifics and metaField configuration. -->
+	<dictionaries>
+		<dictionary id="DICT_UMLS_MS" externalResourceKey="DbConnection" caseSensitive="false">
+			<implementation>
+				<jdbcImpl tableName="umls_ms_2011ab"/>
+			</implementation>
+			<lookupField fieldName="fword"/>
+			<metaFields>
+				<metaField fieldName="cui"/>
+				<metaField fieldName="tui"/>
+				<metaField fieldName="text"/>
+			</metaFields>
+		</dictionary>
+	
+		<dictionary id="DICT_RXNORM" externalResourceKey="RxnormIndexReader" caseSensitive="false">
+			<implementation>
+				<jdbcImpl tableName="umls_ms_2011ab_rxnorm"/>
+			</implementation>
+			<lookupField fieldName="fword"/>
+			<metaFields>
+        <metaField fieldName="cui"/>
+        <metaField fieldName="tui"/>
+        <metaField fieldName="text"/>
+			</metaFields>
+		</dictionary>
+	
+	</dictionaries>
+	<!-- Binds together the components necessary to perform the complete lookup logic start to end. -->
+	<lookupBindings>
+		<lookupBinding> 
+			<dictionaryRef idRef="DICT_UMLS_MS"/> 
+			<lookupInitializer className="org.apache.ctakes.dictionary.lookup.ae.FirstTokenPermLookupInitializerImpl"> 
+				<properties> 
+					<property key="textMetaFields" value="text"/> 
+					<property key="maxPermutationLevel" value="7"/> 
+					<property key="windowAnnotations" value="org.apache.ctakes.typesystem.type.textspan.LookupWindowAnnotation"/>   
+					<property key="exclusionTags" value="VB,VBD,VBG,VBN,VBP,VBZ,CC,CD,DT,EX,IN,LS,MD,PDT,POS,PP,PP$,PRP,PRP$,RP,TO,WDT,WP,WPS,WRB"/> 
+				</properties> 
+			</lookupInitializer> 
+			<lookupConsumer className="org.apache.ctakes.dictionary.lookup.ae.UmlsToSnomedDbConsumerImpl"> 
+				<properties> 
+					<property key="codingScheme" value="ALL"/> 
+					<property key="cuiMetaField" value="cui"/> 
+					<property key="tuiMetaField" value="tui"/> 
+					<property key="anatomicalSiteTuis" value="T021,T022,T023,T024,T025,T026,T029,T030"/> 
+					<property key="procedureTuis" value="T059,T060,T061"/> 
+					<property key="disorderTuis" value="T019,T020,T037,T046,T047,T048,T049,T050,T190,T191"/> 
+                    <property key="findingTuis" value="T116,T121,T130,T119,T126,T123,T109,T131,T110,T125,T114,T111,T118,T124,T127,T195,T129,T115,T073,T081,T170,T184,T033,T005,T169,T022,T018,T101,T093,T089,T062,T041,T055,T004,T070,T197,T057,T083,T074,T002,T065,T092,T204,T196,T067,T080,T102,T098,T040,T034,T201,T097,T064,T054,T007,T044,T053,T069,T039,T103,T122,T015,T043,T052,T056,T079,T091,T042,T192,T031,T058,T120,T100,T171,T032,T095,T078,T090,T167,T068,T168,T028,T014,T045,T104,T011,T013,T094,T087,T066,T185,T008,T051,T038,T194,T086,T012,T063,T017,T082,T088,T099,T001,T075,T096,T072,T071,T200,T085,T077,T010,T016,T203"/> 
+                    <property key="dbConnExtResrcKey" value="DbConnection"/> 
+					<property key="mapPrepStmt" value="select distinct code from umls_ms_2011ab where cui=?"/> 
+				</properties> 
+			</lookupConsumer> 
+		</lookupBinding>
+		
+		<lookupBinding>
+			<dictionaryRef idRef="DICT_RXNORM"/>
+			<lookupInitializer className="org.apache.ctakes.dictionary.lookup.ae.FirstTokenPermLookupInitializerImpl">
+				<properties>
+					<property key="textMetaFields" value="text"/>
+					<property key="maxPermutationLevel" value="7"/>
+					<property key="windowAnnotations" value="org.apache.ctakes.typesystem.type.textspan.LookupWindowAnnotation"/>  
+					<property key="exclusionTags" value="VB,VBD,VBG,VBN,VBP,VBZ,CC,CD,DT,EX,IN,LS,MD,PDT,POS,PP,PP$,RP,TO,WDT,WP,WPS,WRB"/>
+				</properties>
+			</lookupInitializer>
+     <lookupConsumer className="org.apache.ctakes.dictionary.lookup.ae.UmlsToSnomedDbConsumerImpl">
+		<properties>
+          <property key="codingScheme" value="RXNORM"/>
+          <property key="cuiMetaField" value="cui"/>
+          <property key="tuiMetaField" value="tui"/>
+          <property key="medicationTuis" value="T073,T103,T109,T110,T111,T115,T121,T122,T123,T130,T168,T192,T195,T197,T200,T203"/>
+          <property key="dbConnExtResrcKey" value="OrangeBookIndexReader"/>
+          <property key="mapPrepStmt" value="select CODERXNORM from ORANGE_BOOK where CODE=?"/>
+				</properties>
+			</lookupConsumer>
+		
+		</lookupBinding>
+		
+	</lookupBindings>
+</lookupSpecification>
